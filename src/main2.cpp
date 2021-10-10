@@ -4,12 +4,15 @@
 #include <WiFi.h>
 #include "functions.hpp"
 
-const char* ssid = "asda";
-const char* password = "adsas";
+const char* ssid = "Fibertel WiFi225 2.4"; //SAGVB Ingreso
+const char* password = "0142097625";    //SAGIngreso2021
 
 const int puerto = 8088;
 
-enum Data { T, A, C};
+
+uint8_t tiempo = 'T'; 
+uint8_t abrir = 'A'; 
+uint8_t cerrar = 'C'; 
 
 WiFiServer server(puerto);
 
@@ -39,6 +42,9 @@ void setup(){
 
 void loop(){
 
+    pinMode(16, OUTPUT);
+    pinMode(25, INPUT);
+    int aux=0,salida=0,numero=0;
     WiFiClient client = server.available();
     uint8_t data[30];
     if(client){
@@ -49,26 +55,38 @@ void loop(){
             Serial.print("Cliente mando: ");
             Serial.println((char *) data);
             
-            Data ctr;
-            switch (ctr)
+            if(data[1] == tiempo)
             {
-            case 'T':
-                digitalWrite(11,HIGH);
+                digitalWrite(16,HIGH);
                 delay(500);
-                digitalWrite(11,LOW);
-                break;
-            case 'A':
-                digitalWrite(11,HIGH);
+                salida = 0;
+                aux = 0;
+                numero = 0;
+                while (salida==0 && numero<500)
+                {
+                    delay(50);
+                    numero++;
+                    if (digitalRead(25) == 1)
+                    {
+                        aux = 1;
+                    }
+                    if (digitalRead(25) == 0 && aux == 1)
+                    {
+                        aux = 0;
+                        salida=1;
+                    }
+                }
+                digitalWrite(16,LOW);
+            }
+            else if (data[1] == abrir)
+            {
+                digitalWrite(16,HIGH);
                 delay(500);
-                digitalWrite(11,LOW);
-                break;
-            case 'C':
-                digitalWrite(11,HIGH);
+            }
+            else if (data[1] == cerrar)
+            {
+                digitalWrite(16,LOW);
                 delay(500);
-                digitalWrite(11,LOW);
-                break;
-            default:
-                break;
             }
         }
         
